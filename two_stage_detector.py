@@ -314,7 +314,6 @@ def generate_fpn_anchors(
         # List of `A = len(aspect_ratios)` anchor boxes.
         anchor_boxes = []
         for aspect_ratio in aspect_ratios:
-            # logic for anchor boxes below.
             # Vectorized implementation to generate anchors for a single aspect ratio.
             #
             # Calculate resulting width and height of the anchor box as per
