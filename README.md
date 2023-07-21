@@ -1,6 +1,6 @@
 # Two Stage Object Detector
 
-A two-stage object detector, based on Faster R-CNN, which consists of two modules - Region Proposal Networks (RPN) and Fast R-CNN. Trained to detect a set of object classes and evaluate the detection accuracy using the classic metric mean Average Precision (mAP).
+A two-stage object detector, based on [Faster R-CNN](https://arxiv.org/pdf/1506.01497.pdf), which consists of two modules - Region Proposal Networks (RPN) and Fast R-CNN (object detection).
 
 <p align="center">
   <img src="./gif/results.gif" alt="Image Description" width="400" height="300">
@@ -23,7 +23,7 @@ A two-stage object detector, based on Faster R-CNN, which consists of two module
 
 # Objective
 
-**  To achieve fast and accurate object detection in images by combining region proposal generation and object detection within a single neural network architecture.**
+**To achieve fast and accurate object detection in images by combining region proposal generation and object detection within a single neural network architecture.**
 
 In this project, we implemented a **two-stage** object detector, based on [Faster R-CNN](https://arxiv.org/pdf/1506.01497.pdf), which consists of two modules - Region Proposal Networks (RPN) and Fast R-CNN.
 
@@ -35,19 +35,22 @@ We trained it to detect a set of object classes and evaluate the detection accur
   
 # Overview
 
-This architecture is designed to take an RGB color image as input and produce a [6 degrees-of-freedom pose](https://en.wikipedia.org/wiki/Six_degrees_of_freedom) estimate for each instance of an object within the scene from which the image was taken. To do this, PoseCNN uses 5 operations within the architecture descried in the next pipeline:
+The architecture of Faster R-CNN consists of the following components:
 
-- First, a backbone convolutional **feature extraction** network is used to produce a tensor representing learned features from the input image.
-- Second, the extracted features are processed by an **embedding branch** to reduce the spatial resolution and memory overhead for downstream layers.
-- Third, an **instance segmentation branch** uses the embedded features to identify regions in the image corresponding to each object instance (regions of interest).
-- Fourth, the translations for each object instance are estimated using a **translation branch** along with the embedded features.
-- Finally, a **rotation branch** uses the embedded features to estimate a rotation, in the form of a [quaternion](https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation), for each region of interest.
+- Convolutional Backbone: The input image is processed through a convolutional neural network (CNN) backbone, such as ResNet or VGG, to extract feature maps that encode visual information.
+- Region Proposal Network (RPN): The RPN is a separate module that takes the extracted feature maps as input and generates candidate object regions (proposals) along with their bounding box regressions and objectness scores.
+- Region of Interest (RoI) Pooling: The proposed regions are fed into the RoI pooling layer to obtain fixed-size feature maps from the original feature maps.
+- Object Detection Head: A classifier (usually a multi-layer perceptron) is applied to each RoI to predict object class probabilities and refine the bounding box coordinates.
 
-The architecture is shown in more detail from Figure 2 of the [PoseCNN paper](https://arxiv.org/abs/1711.00199):
+The key idea of Faster R-CNN is to share the convolutional backbone between the RPN and object detection head, enabling a more efficient and unified training and inference process for object detection tasks. The RPN proposes candidate regions, which are then used for object detection, resulting in faster and accurate object detection compared to traditional region-based methods.
 
-![architecture](https://deeprob.org/assets/images/posecnn_arch.png)
+The architecture is shown in more detail from Figure 2 of the [Faster R-CNN](https://arxiv.org/pdf/1506.01497.pdf):
 
-Now, we will implement a variant of this architecture that performs each of the 5 operations using PyTorch and data from our `PROPSPoseDataset`.
+<p align="center">
+  <img src="./img/arch.png" width="350" height="400">
+</p>
+
+Now, we will implement a variant of this architecture that performs each of the 4 operations using PyTorch (described in the [*Deeper dive into the code*](https://github.com/leob03/2Stage_Object_Detector#deeper-dive-into-the-code) section) and data from our `PROPSPoseDataset`.
 
 # Dependencies
 **Python 3.10**, modern version of **PyTorch**, **numpy** and **scipy** module. Most of these are okay to install with **pip**. To install all dependencies at once, run the command `pip install -r requirements.txt`
