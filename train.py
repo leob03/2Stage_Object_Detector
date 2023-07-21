@@ -50,6 +50,9 @@ inverse_norm = transforms.Compose(
 )
 
 from two_stage_detector import get_fpn_location_coords, generate_fpn_anchors, iou, rcnn_match_anchors_to_gt, nms
+from func import train_detector
+from two_stage_detector import DetectorBackboneWithFPN, RPN
+from two_stage_detector import FasterRCNN
 
 reset_seed(0)
 
@@ -72,8 +75,44 @@ def get_data():
   val_loader = torch.utils.data.DataLoader(
       val_dataset, batch_size=1, pin_memory=True, num_workers=NUM_WORKERS
   )
-  
+
+
   train_loader_iter = iter(train_loader)
   image_paths, images, gt_boxes = next(train_loader_iter)
-  return train_dataset, val_dataset
+  return train_loader, val_loader
 
+def main():
+    train_loader, _ = get_data()
+    
+    FPN_CHANNELS = 128
+    backbone = DetectorBackboneWithFPN(out_channels=FPN_CHANNELS)
+    rpn = RPN(
+        fpn_channels=FPN_CHANNELS,
+        stem_channels=[FPN_CHANNELS, FPN_CHANNELS],
+        batch_size_per_image=16,
+        pre_nms_topk=500,
+        post_nms_topk=200  
+    )
+    # fmt: off
+    faster_rcnn = FasterRCNN(
+        backbone, rpn, num_classes=NUM_CLASSES, roi_size=(7, 7),
+        stem_channels=[FPN_CHANNELS, FPN_CHANNELS],
+        batch_size_per_image=32,
+    )
+    # fmt: on
+    
+    train_detector(
+        faster_rcnn,
+        train_loader,
+        learning_rate=0.01,
+        max_iters=9000,
+        log_period=50,
+        device=DEVICE,
+    )
+    
+    # After you've trained your model, save the weights for submission.
+    weights_path = "rcnn_detector.pt"
+    torch.save(faster_rcnn.state_dict(), weights_path)
+
+if __name__ == '__main__':
+    main()
